@@ -128,26 +128,26 @@ class documentController extends Controller
                 'name' => 'required',
                 'description' => 'required',
             ]);
-            $filename = "";
+
             $document = document::findOrFail($id);
-            $deleteOldImage = public_path("file" . $document->file);
 
-
+            $imageName = "";
             if ($image = $request->file('file')) {
-                if (File::exists($deleteOldImage)) {
-                    File::delete($deleteOldImage);
+                if ($document->file) {
+                    unlink(public_path("file/" . $document->file));
                 }
 
-                $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('file'), $filename);
+                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('file'), $imageName);
             } else {
-                $filename = $request->file;
+                $imageName = $document->file;
             }
+
 
             $document->name = $request->name;
             $document->description = $request->description;
             $document->status = $request->status;
-            $document->file = $filename;
+            $document->file = $imageName;
 
             $data = $document->save();
 
@@ -178,11 +178,10 @@ class documentController extends Controller
     {
         try {
             $document = document::findOrFail($id);
-            $deleteImage = public_path("file" . $document->file);
-            if (File::exists($deleteImage)) {
-                File::delete($deleteImage);
+            if ($document->file) {
+                unlink(public_path("file/" . $document->file));
             }
-            $result = $document->delete();
+            $document->delete();
             $data = [
                 'status' => true,
                 'message' => 'Document Delate Successfully.',

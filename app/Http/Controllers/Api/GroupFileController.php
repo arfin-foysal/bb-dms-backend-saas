@@ -7,6 +7,7 @@ use App\Models\Group_file;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+
 class groupFileController extends Controller
 {
     /**
@@ -39,7 +40,7 @@ class groupFileController extends Controller
     {
         try {
             $authId = Auth::user()->id;
-        
+
             $document = new Group_file();
             $request->validate([
                 'name' => 'required',
@@ -57,7 +58,7 @@ class groupFileController extends Controller
                 $filename = Null;
             }
             $document->name = $request->name;
-            $document->user_id = $authId ;
+            $document->user_id = $authId;
             $document->group_id = $request->group_id;
             $document->doc_id = $request->doc_id;
             $document->description = $request->description;
@@ -88,7 +89,7 @@ class groupFileController extends Controller
     public function groupSingalDocumnet($id)
     {
         $data = Group_file::with('user')->with('group')
-        ->find($id);
+            ->find($id);
         return response()->json($data);
     }
 
@@ -117,25 +118,24 @@ class groupFileController extends Controller
                 'name' => 'required',
                 'description' => 'required',
             ]);
-            $filename = "";
+
+
             $document = Group_file::findOrFail($id);
-            $deleteOldImage = public_path("file" . $document->file);
-
-
+            $imageName = "";
             if ($image = $request->file('file')) {
-                if (File::exists($deleteOldImage)) {
-                    File::delete($deleteOldImage);
+                if ($document->file) {
+                    unlink(public_path("file/" . $document->file));
                 }
 
-                $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('file'), $filename);
+                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('file'), $imageName);
             } else {
-                $filename = $request->file;
+                $imageName = $document->file;
             }
 
             $document->name = $request->name;
             $document->description = $request->description;
-            $document->file = $filename;
+            $document->file = $imageName;
             $data = $document->save();
 
 
@@ -152,7 +152,7 @@ class groupFileController extends Controller
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
-        }  
+        }
     }
 
     /**
@@ -166,14 +166,13 @@ class groupFileController extends Controller
         // return 'dcc';
         try {
             $document = Group_file::findOrFail($id);
-            $deleteImage = public_path("file" . $document->file);
-            if (File::exists($deleteImage)) {
-                File::delete($deleteImage);
+            if ($document->file) {
+                unlink(public_path("file/" . $document->file));
             }
-            $result = $document->delete();
+            $document->delete();
             $data = [
                 'status' => true,
-                'message' => 'Document Delate Successfully.',
+                'message' => 'Document Delete Successfully.',
                 'status code' => 200,
             ];
             return response()->json($data);
@@ -182,7 +181,7 @@ class groupFileController extends Controller
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
-        } 
+        }
     }
 
 
@@ -191,11 +190,10 @@ class groupFileController extends Controller
     {
         try {
             $data = Group_file::where('group_id', $id)
-            ->with('user')
-            ->with('group')
-            ->get();
+                ->with('user')
+                ->with('group')
+                ->get();
             return response()->json($data);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -207,32 +205,27 @@ class groupFileController extends Controller
     public function downloadFile($id)
     {
         try {
-            
-                   $groupDocument = Group_file::find($id);
-        $file = public_path('file/'.$groupDocument->file);
-        $headers = array(
-            'Content-Type: application/pdf',
-        );
-        return response()->download($file, $groupDocument->file, $headers); 
+
+            $groupDocument = Group_file::find($id);
+            $file = public_path('file' . $groupDocument->file);
+            $headers = array(
+                'Content-Type: application/pdf',
+            );
+            return response()->download($file, $groupDocument->file, $headers);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
         }
-
-
-
-        
-    
     }
 
-    
+
     public function shareDocument(Request $request)
     {
         try {
-             $authId = Auth::user()->id;
-             
+            $authId = Auth::user()->id;
+
             $request->validate([
                 'name' => 'required',
                 'description' => 'required',
@@ -240,10 +233,10 @@ class groupFileController extends Controller
                 'group_id' => 'required',
             ]);
 
-           
+
             $document = new Group_file();
             $document->name = $request->name;
-            $document->user_id = $authId ;
+            $document->user_id = $authId;
             $document->group_id = $request->group_id;
             $document->description = $request->description;
             $document->file = $request->file;
@@ -263,8 +256,4 @@ class groupFileController extends Controller
             ], 500);
         }
     }
-
-
-
-
 }

@@ -66,6 +66,9 @@ class catagoryController extends Controller
                 'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
             ]);
 
+
+
+
             $filename = "";
             if ($image = $request->file('image')) {
                 $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
@@ -83,7 +86,7 @@ class catagoryController extends Controller
 
             $data = [
                 'status' => true,
-                'message' => 'Catagory created successfully.',
+                'message' => 'Category created successfully.',
                 'status code' => 200,
             ];
             return response()->json($data);
@@ -161,33 +164,34 @@ class catagoryController extends Controller
             $request->validate([
                 'name' => 'required',
                 'description' => 'required',
-            
+
             ]);
-            $filename = "";
+
+
             $catagory = catagory::findOrFail($id);
-            $destination = public_path("images" . $catagory->image);
-           
+
+            $imageName = "";
             if ($image = $request->file('image')) {
-                if (File::exists($destination)) {
-                    File::delete($destination);
+                if ($catagory->image) {
+                    unlink(public_path("images/" . $catagory->image));
                 }
 
-                $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('images'), $filename);
+                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('images'), $imageName);
             } else {
-                $filename = $request->image;
+                $imageName = $catagory->image;
             }
 
             $catagory->name = $request->name;
             $catagory->description = $request->description;
             $catagory->status = $request->status;
-            $catagory->image = $filename;
+            $catagory->image = $imageName;
             $catagory->save();
 
 
             $data = [
                 'status' => true,
-                'message' => 'Catagory Update Successfully.',
+                'message' => 'Category Update Successfully.',
                 'status code' => 200,
                 // 'data' => $catagory,
             ];
@@ -212,14 +216,13 @@ class catagoryController extends Controller
     {
         try {
             $catagory = catagory::findOrFail($id);
-            $deleteImage = public_path("images" . $catagory->image);
-            if (File::exists($deleteImage)) {
-                File::delete($deleteImage);
+            if ($catagory->image) {
+                unlink(public_path("images/" . $catagory->image));
             }
-            $result = $catagory->delete();
+            $catagory->delete();
             $data = [
                 'status' => true,
-                'message' => 'Catagory Delate Successfully.',
+                'message' => 'Category Delate Successfully.',
                 'status code' => 200,
             ];
             return response()->json($data);

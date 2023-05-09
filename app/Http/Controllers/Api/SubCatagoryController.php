@@ -60,7 +60,7 @@ class subCatagoryController extends Controller
 
             $data = [
                 'status' => true,
-                'message' => 'Sub Catagory created successfully.',
+                'message' => 'Sub Category created successfully.',
                 'status code' => 200,
             ];
             return response()->json($data);
@@ -121,34 +121,34 @@ class subCatagoryController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $subCatagory = sub_catagory::findOrFail($id);
-            $filename = "";
 
-            $destination = public_path("images" . $subCatagory->image);
+            $subCategory = sub_catagory::findOrFail($id);
+           
 
+             $imageName = "";
             if ($image = $request->file('image')) {
-                if (File::exists($destination)) {
-                    File::delete($destination);
+                if ($subCategory->image) {
+                    unlink(public_path("images/" . $subCategory->image));
                 }
 
-                $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('images'), $filename);
+                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('images'), $imageName);
             } else {
-                $filename = $request->image;
+                $imageName = $subCategory->image;
             }
 
-            $subCatagory->name = $request->name;
-            $subCatagory->description = $request->description;
-            $subCatagory->status = $request->status;
-            $subCatagory->image = $filename;
-            $data = $subCatagory->save();
+            $subCategory->name = $request->name;
+            $subCategory->description = $request->description;
+            $subCategory->status = $request->status;
+            $subCategory->image = $imageName;
+            $data = $subCategory->save();
 
 
             $data = [
                 'status' => true,
-                'message' => 'Sub Catagory Update Successfully.',
+                'message' => 'Sub Category Update Successfully.',
                 'status code' => 200,
-                'data' => $subCatagory,
+                'data' => $subCategory,
             ];
 
             return response()->json($data);
@@ -169,15 +169,14 @@ class subCatagoryController extends Controller
     public function destroy($id)
     {
         try {
-            $subCatagory = sub_catagory::findOrFail($id);
-            $deleteImage = public_path("images" . $subCatagory->image);
-            if (File::exists($deleteImage)) {
-                File::delete($deleteImage);
+            $subCategory = sub_catagory::findOrFail($id);
+            if ($subCategory->image) {
+                unlink(public_path("images/" . $subCategory->image));
             }
-            $result = $subCatagory->delete();
+            $subCategory->delete();
             $data = [
                 'status' => true,
-                'message' => 'Sub Catagory Delate Successfully.',
+                'message' => 'Sub Category Delate Successfully.',
                 'status code' => 200,
             ];
             return response()->json($data);

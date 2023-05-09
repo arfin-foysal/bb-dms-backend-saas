@@ -164,22 +164,18 @@ class userController extends Controller
  
             ]);
 
-            
-            $filename = "";
-         
-            $destination = public_path("images" . $user->image);
-           
+        
+            $imageName = "";
             if ($image = $request->file('image')) {
-                if (File::exists($destination)) {
-                    File::delete($destination);
+                if ($user->image) {
+                    unlink(public_path("images/" . $user->image));
                 }
 
-                $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('images'), $filename);
+                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('images'), $imageName);
             } else {
-                $filename = $request->image;
+                $imageName = $user->image;
             }
-
 
             $user->name = $request->name;
             $user->email = $request->email;
@@ -188,7 +184,7 @@ class userController extends Controller
             $user->status = $request->status;
             $user->gender = $request->gender;
             $user->user_type = $request->user_type;
-            $user->image = $filename;
+            $user->image = $imageName;
             $user->save();
 
 
@@ -236,14 +232,14 @@ class userController extends Controller
     {
         try {
             $user= User::findOrFail($id);
-            $deleteImage = public_path("images" . $user->image);
-            if (File::exists($deleteImage)) {
-                File::delete($deleteImage);
+        
+            if ($user->image) {
+                unlink(public_path("images/" . $user->image));
             }
-            $result = $user->delete();
+            $user->delete();
             $data = [
                 'status' => true,
-                'message' => 'User Delate Successfully.',
+                'message' => 'User deleted successfully.',
                 'status code' => 200,
             ];
             return response()->json($data);

@@ -200,25 +200,23 @@ class groupController extends Controller
 
             ]);
 
-            $filename = "";
+      
 
-            $destination = public_path("images" . $group->image);
-
+            $imageName = "";
             if ($image = $request->file('image')) {
-                if (File::exists($destination)) {
-                    File::delete($destination);
+                if ($group->image) {
+                    unlink(public_path("images/" . $group->image));
                 }
 
-                $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('images'), $filename);
+                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('images'), $imageName);
             } else {
-                $filename = $request->image;
+                $imageName = $group->image;
             }
-
 
             $group->name = $request->name;
             $group->description = $request->description;
-            $group->image = $filename;
+            $group->image = $imageName;
             $group->save();
 
 
@@ -261,7 +259,7 @@ class groupController extends Controller
 
             $data = [
                 'status' => true,
-                'message' => 'group Update Successfully.',
+                'message' => 'Group Update Successfully.',
                 'status code' => 200,
                 'data' => $group,
             ];
@@ -285,11 +283,10 @@ class groupController extends Controller
     {
         try {
             $group = Group::findOrFail($id);
-            $deleteImage = public_path("images" . $group->image);
-            if (File::exists($deleteImage)) {
-                File::delete($deleteImage);
+            if ($group->image) {
+                unlink(public_path("images/" . $group->image));
             }
-            $result = $group->delete();
+            $group->delete();
             $data = [
                 'status' => true,
                 'message' => 'Group Delate Successfully.',
