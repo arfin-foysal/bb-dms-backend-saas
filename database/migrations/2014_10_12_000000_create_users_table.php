@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->string('username')->unique();
             $table->enum('status', ['Pending', 'Active'])->default('pending');
-            $table->enum('user_type', ['Superadmin','Admin', 'User'])->default('User');
+            $table->enum('user_type', ['Developer','Systemadmin','Superadmin','Admin', 'User'])->default('User');
             $table->unsignedBigInteger('company_id')->nullable();
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
             $table->timestamp('email_verified_at')->nullable();

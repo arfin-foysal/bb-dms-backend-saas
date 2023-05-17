@@ -13,16 +13,12 @@ use PhpParser\Node\Stmt\TryCatch;
 
 class groupController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function userWiseGroupView()
     {
         try {
-            $authId = Auth::user()->id;
-            $member = Group_member::where('user_id', $authId)
+            $member = Group_member::where('user_id', Auth::user()->id)
+                ->where('company_id', Auth::user()->company_id)
                 ->with('group', 'group.groupCreator')
                 ->latest()
                 ->get();
@@ -56,27 +52,17 @@ class groupController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
+
+
     public function createGroup(Request $request)
     {
+        
+      DB::beginTransaction();
         try {
             $authId = Auth::user()->id;
-
+            $companyId = Auth::user()->company_id;
             $group = new Group();
             $request->validate([
                 'name' => 'required',
@@ -99,30 +85,29 @@ class groupController extends Controller
             $group->name = $request->name;
             $group->user_id = $authId;
             $group->description = $request->description;
+            $group->company_id = $companyId;
             $group->image = $filename;
             $group->save();
 
             $groupArr = json_decode($request->member);
-
-            // Group_member::create([
-            //     'group_id' => $group->id,
-            //     'user_id' => $authId,
-            // ]);
 
             if ($groupArr) {
                 foreach ($groupArr as $key => $userId) {
                     $groupMember[] = [
                         'group_id' => $group->id,
                         'user_id' => $userId,
+                        'company_id' => $companyId,
                     ];
                 }
                 Group_member::insert($groupMember);
-                if(!in_array($authId,$groupArr)){
-                    Group_member::create([
-                        'group_id' => $group->id,
-                        'user_id' => $authId,
-                    ]);
+                   if (!in_array($authId, $groupArr)) {
+                    $memberAdd=new Group_member();
+                    $memberAdd->group_id = $group->id;
+                    $memberAdd->user_id = $authId;
+                    $memberAdd->company_id = $companyId;
+                    $memberAdd->save();
                 }
+
             }
 
 
@@ -132,8 +117,10 @@ class groupController extends Controller
                 'message' => 'Group created successfully.',
                 'status code' => 200,
             ];
+            DB::commit();
             return response()->json($data);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
@@ -141,15 +128,10 @@ class groupController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function singalGroup($id)
     {
         $group = Group::where('id', $id)
+            ->where('company_id', Auth::user()->company_id)
             ->with('user')
             ->first();
 
@@ -161,46 +143,28 @@ class groupController extends Controller
             'data' => $group,
         ];
         return response()->json($data);
-        //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
+
     public function updateGroup(Request $request, $id)
     {
 
-
+      DB::beginTransaction();
 
         try {
-
-
-
-            $group = Group::findOrFail($id);
+            $group = Group::where('id', $id)
+            ->where('company_id', Auth::user()->company_id)
+            ->first();
             $authId = Auth::user()->id;
+            $companyId = Auth::user()->company_id;
 
             $request->validate([
                 'name' => 'required',
                 'description' => 'required',
 
             ]);
-
-      
 
             $imageName = "";
             if ($image = $request->file('image')) {
@@ -219,42 +183,39 @@ class groupController extends Controller
             $group->image = $imageName;
             $group->save();
 
+            $userHasPerDel = Group_member::where('group_id', $group->id)
+            ->where('company_id', $companyId)
+            ->get();
 
-
-
-
-            $userHasPerDel = Group_member::where('group_id', $group->id)->get();
             foreach ($userHasPerDel as $key => $value) {
                 $value->delete();
             }
-
 
             $groupArr = json_decode($request->member);
 
 
             if ($groupArr > 0) {
+
+                if (!in_array($authId, $groupArr)) {
+                    $memberAdd=new Group_member();
+                    $memberAdd->group_id = $group->id;
+                    $memberAdd->user_id = $authId;
+                    $memberAdd->company_id = $companyId;
+                    $memberAdd->save();
+                }
+
                 foreach ($groupArr as $key => $userId) {
                     $groupMember[] = [
                         'group_id' => $group->id,
                         'user_id' => $userId,
+                        'company_id' => $companyId,
+                        
                     ];
                 }
                 Group_member::insert($groupMember);
+            }
 
-                if (!in_array($authId, $groupArr)) {
-                    Group_member::create([
-                        'group_id' => $group->id,
-                        'user_id' => $authId,
-                    ]);
-                }
-            } 
-            
-            // else {
-            //     Group_member::create([
-            //         'group_id' => $group->id,
-            //         'user_id' => $authId,
-            //     ]);
-            // }
+        
 
 
             $data = [
@@ -264,8 +225,11 @@ class groupController extends Controller
                 'data' => $group,
             ];
 
+            DB::commit();
+
             return response()->json($data);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
@@ -282,7 +246,9 @@ class groupController extends Controller
     public function destroyGroup($id)
     {
         try {
-            $group = Group::findOrFail($id);
+            $group = Group::where('id', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
             if ($group->image) {
                 unlink(public_path("images/" . $group->image));
             }

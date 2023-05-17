@@ -10,34 +10,12 @@ use Illuminate\Support\Facades\File;
 
 class groupFileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
     public function createGroupDocumnent(Request $request)
     {
+        
         try {
             $authId = Auth::user()->id;
 
@@ -61,6 +39,7 @@ class groupFileController extends Controller
             $document->user_id = $authId;
             $document->group_id = $request->group_id;
             $document->doc_id = $request->doc_id;
+            $document->company_id = Auth::user()->company_id;
             $document->description = $request->description;
             $document->file = $filename;
             $document->save();
@@ -80,37 +59,15 @@ class groupFileController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function groupSingalDocumnet($id)
     {
-        $data = Group_file::with('user')->with('group')
-            ->find($id);
+        $data = Group_file::where('id', $id)->where('company_id', Auth::user()->company_id)
+            ->with(['user','group'])
+            ->first();
         return response()->json($data);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function documnetupdate(Request $request, $id)
     {
         try {
@@ -120,10 +77,10 @@ class groupFileController extends Controller
             ]);
 
 
-            $document = Group_file::findOrFail($id);
+            $document = Group_file::where('id', $id)->where('company_id', Auth::user()->company_id)->first();
             $imageName = "";
             if ($image = $request->file('file')) {
-                if ($document->file) {
+                if ($document->file && $document->is_shared=='no' ) {
                     unlink(public_path("file/" . $document->file));
                 }
 
@@ -163,10 +120,12 @@ class groupFileController extends Controller
      */
     public function destroyGroupDocument($id)
     {
-        // return 'dcc';
+   
         try {
-            $document = Group_file::findOrFail($id);
-            if ($document->file) {
+            $document = Group_file::where('id', $id)
+            ->where('company_id', Auth::user()->company_id)
+            ->first();
+            if ($document->file&& $document->is_shared=='no') {
                 unlink(public_path("file/" . $document->file));
             }
             $document->delete();
@@ -190,6 +149,7 @@ class groupFileController extends Controller
     {
         try {
             $data = Group_file::where('group_id', $id)
+                ->where('company_id', Auth::user()->company_id)
                 ->with('user')
                 ->with('group')
                 ->get();
@@ -205,13 +165,16 @@ class groupFileController extends Controller
     public function downloadFile($id)
     {
         try {
-
-            $groupDocument = Group_file::find($id);
-            $file = public_path('file' . $groupDocument->file);
+            $document = Group_file::where([["id", "=", $id], [
+                "company_id", "=",
+                Auth::user()->company_id
+            ]])->first();
+            $file = public_path("file/" . $document->file);
             $headers = array(
                 'Content-Type: application/pdf',
+                
             );
-            return response()->download($file, $groupDocument->file, $headers);
+            return response()->download($file, $document->name, $headers); 
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -234,13 +197,36 @@ class groupFileController extends Controller
             ]);
 
 
+
+            $existDocument = Group_file::where('company_id', Auth::user()->company_id)->get();
+
+            if(
+                $existDocument->where('name',$request->name)
+                ->where('group_id',$request->group_id)
+                ->first()
+            ){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Document already shared This Group',
+                ], 500);
+            }
+
+        
+            
             $document = new Group_file();
             $document->name = $request->name;
             $document->user_id = $authId;
+            $document->doc_id= $request->doc_id;
             $document->group_id = $request->group_id;
+            $document->company_id = Auth::user()->company_id;
             $document->description = $request->description;
             $document->file = $request->file;
+            $document->is_shared = 'yes';
             $document->save();
+
+
+
+            
 
             $data = [
                 'status' => true,

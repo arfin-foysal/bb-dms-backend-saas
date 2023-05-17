@@ -11,15 +11,12 @@ use Illuminate\Support\Facades\File;
 
 class catagoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
-        $authId = Auth::user()->id;
-        $data = catagory::where("user_id", "=", $authId)
+        $auth = Auth::user();
+        $data = catagory::where("user_id", "=", $auth->id)
+            ->where("company_id", "=", $auth->company_id)
             ->with('user')
             ->latest()
             ->get();
@@ -32,34 +29,21 @@ class catagoryController extends Controller
 
     public function allCategory()
     {
-        $authId = Auth::user()->id;
-        $data = catagory::where("user_id", "=", $authId)
-            // ->where("status","=","Active")
+        $auth = Auth::user();
+        $data = catagory::where("user_id", "=", $auth->id)
+            ->where("company_id", "=", $auth->company_id)
             ->get();
         return response()->json($data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
     public function store(Request $request)
     {
 
         try {
-            $catagory = new catagory();
 
+            $catagory = new catagory();
             $request->validate([
                 'name' => 'required',
                 'description' => 'required',
@@ -80,7 +64,7 @@ class catagoryController extends Controller
             $catagory->name = $request->name;
             $catagory->user_id = Auth::user()->id;
             $catagory->description = $request->description;
-            // $catagory->status = $request->status;
+            $catagory->company_id = Auth::user()->company_id;
             $catagory->image = $filename;
             $catagory->save();
 
@@ -98,37 +82,29 @@ class catagoryController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        $data = catagory::with('user')->find($id);
+        $data = catagory::with('user')
+            ->where("company_id", "=", Auth::user()->company_id)
+            ->find($id);
+
         return response()->json($data);
     }
 
 
     public function categoryList(Request $request)
     {
-        $data = catagory::all();
+        $data = catagory::where("company_id", "=", Auth::user()->company_id)
+            ->all();
         return response()->json($data);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function showSubCatagory($id)
     {
         $authId = Auth::user()->id;
 
         $data = catagory::where("user_id", "=", $authId)
-
+        ->where("company_id", "=", Auth::user()->company_id)
             ->with('subCatagory')
             ->with('subSubCatagory')
             ->find($id);
@@ -136,29 +112,18 @@ class catagoryController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function edit($id)
     {
-        $data  = catagory::findOrFail($id);
+        $data  = catagory:: where([["id", "=", $id], ["company_id", "=",
+        Auth::user()->company_id]])->first();
+
         return response()->json($data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function update(Request $request, $id)
     {
-
-        // return response($request);
 
         try {
             $request->validate([
@@ -168,8 +133,9 @@ class catagoryController extends Controller
             ]);
 
 
-            $catagory = catagory::findOrFail($id);
-
+            $catagory = 
+            catagory::where([["id", "=", $id], ["company_id", "=",
+            Auth::user()->company_id]])->first();
             $imageName = "";
             if ($image = $request->file('image')) {
                 if ($catagory->image) {
@@ -206,16 +172,15 @@ class catagoryController extends Controller
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function destroy($id)
     {
         try {
-            $catagory = catagory::findOrFail($id);
+            $catagory =
+                catagory::
+                where([["id", "=", $id], ["company_id", "=",
+                 Auth::user()->company_id]])->first();
+
             if ($catagory->image) {
                 unlink(public_path("images/" . $catagory->image));
             }

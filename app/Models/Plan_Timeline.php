@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class userHasRole extends Model
+class Plan_Timeline extends Model
 {
     use HasFactory;
 }

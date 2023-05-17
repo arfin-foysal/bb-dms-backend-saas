@@ -12,11 +12,7 @@ use App\Http\Controllers\Api\withCookie;
 
 class AuthController extends Controller
 {
-    /**
-     * Create User
-     * @param Request $request
-     * @return User
-     */
+  
     public function createUser(Request $request)
     {
      
@@ -71,11 +67,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Login The User
-     * @param Request $request
-     * @return User
-     */
+
     public function loginUser(Request $request)
     {
 
@@ -105,7 +97,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            $user = User::where('email', $request->email)->with("userHasPermission", 'userHasPermission.permission')->first();
+            $user = User::where('email', $request->email)->first();
 
 
 

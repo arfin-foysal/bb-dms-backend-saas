@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('description');
             $table->enum('status', ['Dactive', 'Active'])->default('Dactive');
             $table->enum('admin_status', ['Dactive', 'Active'])->default('Dactive');
+            $table->enum('is_shared', ['yes', 'no'])->default('no');
             $table->string('file');
             $table->softDeletes();
             $table->timestamps();

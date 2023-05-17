@@ -10,15 +10,14 @@ use Illuminate\Support\Facades\File;
 
 class subSubCatagoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
-        $authId = Auth::user()->id;
-        $data = sub_sub_catagory::where("user_id", "=", $authId)
+
+        $data = sub_sub_catagory::where([["user_id", "=", Auth::user()->id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])
             ->with('catagory')
             ->with('user')
             ->with('subCatagory')
@@ -27,33 +26,18 @@ class subSubCatagoryController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
+
     public function store(Request $request)
     {
         try {
             $subSubCatagory = new sub_sub_catagory();
             $request->validate([
                 'name' => 'required',
-
                 'catagory_id' => 'required',
                 'sub_catagory_id' => 'required',
                 'description' => 'required',
-                // 'status' => 'required',
                 'image' => 'image|mimes:jpg,png,jpeg,gif,svg',
             ]);
 
@@ -69,7 +53,7 @@ class subSubCatagoryController extends Controller
             $subSubCatagory->catagory_id = $request->catagory_id;
             $subSubCatagory->sub_catagory_id = $request->sub_catagory_id;
             $subSubCatagory->description = $request->description;
-            // $subSubCatagory->status = $request->status;
+            $subSubCatagory->company_id = Auth::user()->company_id;
             $subSubCatagory->image = $filename;
             $result = $subSubCatagory->save();
 
@@ -87,41 +71,34 @@ class subSubCatagoryController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function show($id)
     {
-        $data = sub_sub_catagory::with('catagory')->with('user')->with('subCatagory')->find($id);
+        $data = sub_sub_catagory::with('catagory')->with('user')->with('subCatagory')->where([["id", "=", $id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])->first();
         return response()->json($data);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function edit($id)
     {
-        $data = sub_sub_catagory::find($id);
+        $data = sub_sub_catagory::where([["id", "=", $id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])->first();
         return response()->json($data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function update(Request $request, $id)
     {
         try {
-            $subSubCatagory = sub_sub_catagory::findOrFail($id);
+            $subSubCatagory = sub_sub_catagory::where([["id", "=", $id], [
+                "company_id", "=",
+                Auth::user()->company_id
+            ]])->first();
 
             $imageName = "";
             if ($image = $request->file('image')) {
@@ -161,16 +138,14 @@ class subSubCatagoryController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function destroy($id)
     {
         try {
-            $subCategory   = sub_sub_catagory::findOrFail($id);
+            $subCategory   = sub_sub_catagory::where([["id", "=", $id], [
+                "company_id", "=",
+                Auth::user()->company_id
+            ]])->first();
             if ($subCategory->image) {
                 unlink(public_path("images/" . $subCategory->image));
             }
@@ -191,7 +166,10 @@ class subSubCatagoryController extends Controller
 
     public function getSubSubCatagoryBySubCatagoryId($id)
     {
-        $data = sub_sub_catagory::where('sub_catagory_id', $id)->get();
+        $data = sub_sub_catagory::where([["sub_catagory_id", "=", $id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])->get();
         return response()->json($data);
     }
 }

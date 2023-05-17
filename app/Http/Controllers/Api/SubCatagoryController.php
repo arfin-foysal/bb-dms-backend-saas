@@ -10,15 +10,14 @@ use Illuminate\Support\Facades\File;
 
 class subCatagoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
-        $authId = Auth::user()->id;
-        $data = sub_catagory::where("user_id", "=", $authId)
+
+        $data = sub_catagory::where([["user_id", "=", Auth::user()->id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])
             ->with('catagory')->with('user')
             ->latest()
             ->get();
@@ -54,9 +53,9 @@ class subCatagoryController extends Controller
             $subCatagory->user_id = auth()->user()->id;
             $subCatagory->catagory_id = $request->catagory_id;
             $subCatagory->description = $request->description;
-            // $subCatagory->status = $request->status;
+            $subCatagory->company_id = auth()->user()->company_id;
             $subCatagory->image = $filename;
-            $result = $subCatagory->save();
+            $subCatagory->save();
 
             $data = [
                 'status' => true,
@@ -64,7 +63,6 @@ class subCatagoryController extends Controller
                 'status code' => 200,
             ];
             return response()->json($data);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -82,50 +80,44 @@ class subCatagoryController extends Controller
     public function show($id)
     {
 
-        $data = sub_catagory::with('catagory')->with('user')->find($id);
+        $data = sub_catagory::with('catagory')->with('user')->where([["id", "=", $id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])->first();
         return response()->json($data);
     }
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function showSubSubCatagory($id)
     {
+        $data = sub_catagory::with('SubSubCatagory')->with('user')->where([["id", "=", $id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])->first();
 
-        $data = sub_catagory::with('SubSubCatagory')->with('user')->find($id);
         return response()->json($data);
     }
 
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function edit($id)
     {
-        $data  = sub_catagory::findOrFail($id);
+        $data  = sub_catagory::where([["id", "=", $id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])->first();
         return response()->json($data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function update(Request $request, $id)
     {
         try {
 
-            $subCategory = sub_catagory::findOrFail($id);
-           
+            $subCategory = sub_catagory::where([["id", "=", $id], ["company_id", "=",
+            Auth::user()->company_id]])->first();;
 
-             $imageName = "";
+
+            $imageName = "";
             if ($image = $request->file('image')) {
                 if ($subCategory->image) {
                     unlink(public_path("images/" . $subCategory->image));
@@ -169,7 +161,8 @@ class subCatagoryController extends Controller
     public function destroy($id)
     {
         try {
-            $subCategory = sub_catagory::findOrFail($id);
+            $subCategory = sub_catagory::where([["id", "=", $id], ["company_id", "=",
+            Auth::user()->company_id]])->first();
             if ($subCategory->image) {
                 unlink(public_path("images/" . $subCategory->image));
             }
@@ -191,9 +184,8 @@ class subCatagoryController extends Controller
 
     public function subCategoryByCatagory($id)
     {
-        $data = sub_catagory::where('catagory_id', $id)->get();
+        $data = sub_catagory::where([['catagory_id', $id],["company_id", "=",
+        Auth::user()->company_id]])->get();
         return response()->json($data);
     }
-
-
 }

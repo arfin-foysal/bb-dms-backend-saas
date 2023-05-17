@@ -55,9 +55,7 @@ class User extends Authenticatable
         return $this->hasMany(document::class);
     }
     
-    public function userHasPermission(){
-        return $this->hasMany(userHasPermission::class);
-    }
+
 
     public function group()
     {

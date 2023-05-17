@@ -21,12 +21,11 @@ return new class extends Migration
             $table->unsignedBigInteger('sub_catagory_id')->nullable();
             $table->unsignedBigInteger('sub_sub_catagory_id')->nullable();
             $table->text('description');
-            $table->enum('status', ['Pending', 'Active'])->default('pending');
+            $table->enum('status', ['Pending', 'Active','Cancel'])->default('pending');
             $table->string('file');
-            $table->enum('admin_status', ['Pending', 'Active'])->default('pending');
+            $table->enum('admin_status', ['Pending', 'Active','Cancel'])->default('pending');
             $table->unsignedBigInteger('company_id')->nullable();
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-         
             $table->softDeletes();
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
