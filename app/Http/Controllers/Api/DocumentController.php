@@ -395,6 +395,7 @@ class documentController extends Controller
         $mydoc = document::where([['user_id', '=', $authId], ['company_id', '=', Auth::user()->company_id]])->count();
         $publish = document::where('admin_status', 'Active')
             ->where('status', 'Active')
+            ->where('company_id', '=', Auth::user()->company_id)
             ->count();
             $myGroup = Group::where('user_id', Auth::user()->id)
             ->where('company_id', '=', Auth::user()->company_id)
