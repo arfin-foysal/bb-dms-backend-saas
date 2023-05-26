@@ -19,10 +19,12 @@ return new class extends Migration
             $table ->string('email')->unique();
             $table ->string('image')->nullable();
             $table->string('number')->nullable();
+            // $table ->string('company_unique_name')->unique();
             $table ->enum('status', ['Pending', 'Active'])->default('pending');
             $table->timestamps();
         });
     }
+    
 
     /**
      * Reverse the migrations.

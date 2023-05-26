@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatagoryController;
+use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\api\GroupController;
 use App\Http\Controllers\api\GroupFileController;
@@ -44,6 +45,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/users-update/{id}', [UserController::class, 'update']);
     Route::delete('/users-delete/{id}', [UserController::class, 'destroy']);
     Route::get('/all_user', [UserController::class, 'allUser']);
+    Route::post ('superadmin-create-or-update-and-company-assign', [UserController::class, 'superAdminCreateOrUpdateAndCompanyAssign']);
+
+    Route ::post ('password-change', [UserController::class, 'ChangePassword']);
+
+    Route::get('/super-admin-list', [UserController::class, 'superAdminList']);
+    Route ::delete('/super-admin-delete/{id}', [UserController::class, 'superAdminDelete']);
 
     //categories
     Route::get('/category', [CatagoryController::class, 'index']);
@@ -121,6 +128,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::any('share_document', [GroupFileController::class, 'shareDocument']);
     Route::get('download/{id}', [DocumentController::class, 'download']);
     Route::get('download_file/{id}', [GroupFileController::class, 'downloadFile']);
+
+    //company
+
+    Route::post ('create-or-update-company', [CompanyController::class, 'createOrUpdateCompany']);
+    Route::get('company-list', [CompanyController::class, 'companyList']);
+    Route::delete('delete-company/{id}', [CompanyController::class, 'companyDelete']);
 
 
 
