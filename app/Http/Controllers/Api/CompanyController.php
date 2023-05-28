@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -21,10 +22,26 @@ class CompanyController extends Controller
     public function createOrUpdateCompany(Request $request)
     {
         try {
-            
-            if (empty($request->id)) {
-                $company = new Company();
 
+            if (empty($request->id)) {
+                
+
+                $validator = Validator::make($request->all(), [
+                    'name' => 'required',
+                    'email' => 'required|email|unique:companies,email',
+                    'unique_id' => 'required|min:4|unique:companies,unique_id',
+                    'image' => ' nullable|image|mimes:jpg,png,jpeg,gif,svg',
+                    'country' => 'required',
+                    'address' => 'required',
+                    'number' => 'required',
+
+                ]);
+                if ($validator->fails()) {
+                    return response()->json(['error' => $validator->errors()], 409
+                    );
+                }
+
+                $company = new Company();
                 $filename = "";
                 if ($image = $request->file('image')) {
                     $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
@@ -38,7 +55,11 @@ class CompanyController extends Controller
                 $company->email = $request->email;
                 $company->number = $request->number;
                 $company->image = $filename;
+                $company->country = $request->country;
+                $company->address = $request->address;
+                $company->unique_id = $request->unique_id;
                 $company->status = $request->status;
+                $company->created_by = Auth()->user()->id;
                 $company->save();
 
                 $data = [
@@ -51,6 +72,19 @@ class CompanyController extends Controller
 
                 $company = Company::find($request->id);
 
+
+                $validator = Validator::make($request->all(), [
+                    'name' => 'required',
+                    'email' => 'required|email|unique:users,email,' . $company->id,
+                    'unique_id' => 'required|min:4|unique:companies,unique_id,' . $company->id,
+    
+                ]);
+
+                if ($validator->fails()) {
+                    return response()->json(['error' => $validator->errors()], 409
+                    );
+                }
+                
                 $filename = "";
                 if ($image = $request->file('image')) {
                     $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
@@ -64,7 +98,11 @@ class CompanyController extends Controller
                 $company->email = $request->email;
                 $company->number = $request->number;
                 $company->image = $filename;
+                $company->country = $request->country;
+                $company->address = $request->address;
+                $company->unique_id = $request->unique_id;
                 $company->status = $request->status;
+                $company->updated_by = $request->updated_by;
                 $company->save();
 
                 $data = [

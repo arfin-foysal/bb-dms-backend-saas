@@ -267,22 +267,22 @@ class userController extends Controller
                     'name' => 'required',
                     'email' => 'required|email|unique:users,email,' . $user->id,
                     'username' => 'required|min:4|unique:users,username,' . $user->id,
-    
+
                 ]);
-    
-    
+
+
                 $imageName = "";
                 if ($image = $request->file('image')) {
                     if ($user->image) {
                         unlink(public_path("images/" . $user->image));
                     }
-    
+
                     $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
                     $image->move(public_path('images'), $imageName);
                 } else {
                     $imageName = $user->image;
                 }
-    
+
                 $user->name = $request->name;
                 $user->email = $request->email;
                 $user->username = $request->username;
@@ -292,22 +292,18 @@ class userController extends Controller
                 $user->company_id = $request->company_id;
                 $user->image = $imageName;
                 $user->save();
-    
-    
-    
-    
+
+
+
+
                 $data = [
                     'status' => true,
                     'message' => 'User Update Successfully.',
                     'status code' => 200,
                     'data' => $user,
                 ];
-    
-                return response()->json($data);   
 
-      
-    
-
+                return response()->json($data);
             }
         } catch (\Throwable $th) {
             return response()->json([
@@ -363,49 +359,43 @@ class userController extends Controller
     }
 
 
-    
+
 
 
 
     public function ChangePassword(Request $request)
     {
-  
-         $validator=Validator::make($request->all(),[
-             'old_password'=>'required',
-             'new_password'=>'required|min:6',
-             'confirm_password'=>'required|same:new_password'
-         ]);
 
-       if ($validator->fails()) {
-          return response()->json([
-             'message'=>'validations fails',
-             'errors' =>$validator->errors()
-          ],422);
-       }
+        $validator = Validator::make($request->all(), [
+            'old_password' => 'required',
+            'new_password' => 'required|min:6',
+            'confirm_password' => 'required|same:new_password'
+        ]);
 
-         $user=User::find(Auth::user()->id);    
- 
-       if (Hash::check($request->old_password,$user->password)) {
-          $user->update([
-             'password'=>Hash::make($request->new_password)
-          ]);
- 
- 
-          return response()->json([
-             'message'=>' password successfully updated',
-             'errors' =>$validator->errors()
-          ],200);
-       }
-       else
-       {
-          return response()->json([
-             'message'=>'old password does not match',
-             'errors' =>$validator->errors()
-          ],422);
-       }
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'validations fails',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::find(Auth::user()->id);
+
+        if (Hash::check($request->old_password, $user->password)) {
+            $user->update([
+                'password' => Hash::make($request->new_password)
+            ]);
+
+
+            return response()->json([
+                'message' => ' password successfully updated',
+                'errors' => $validator->errors()
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'old password does not match',
+                'errors' => $validator->errors()
+            ], 422);
+        }
     }
-
-
-
-
 }
