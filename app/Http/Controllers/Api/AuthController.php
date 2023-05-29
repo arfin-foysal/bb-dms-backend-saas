@@ -97,6 +97,17 @@ class AuthController extends Controller
                 ], 401);
             }
 
+
+            if (Auth::user()->status === "Pending") {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Your account is not active. Please contact with admin.',
+                ], 401);
+            }
+
+
+
+
             $user = User::where('users.email', $request->email)
             ->leftJoin('companies', 'users.company_id', '=', 'companies.id')
             ->select('users.*', 'companies.name as company_name', 'companies.image as company_image')
