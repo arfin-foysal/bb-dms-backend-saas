@@ -19,7 +19,7 @@ class Group extends Model
 
     public function group_member()
     {
-        return $this->hasMany(Group_member::class, );
+        return $this->hasMany(Group_member::class );
     }
 
     public function user()

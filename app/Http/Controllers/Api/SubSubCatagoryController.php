@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\sub_sub_catagory;
+use App\Models\Sub_sub_catagory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -14,7 +14,7 @@ class subSubCatagoryController extends Controller
     public function index()
     {
 
-        $data = sub_sub_catagory::where([["user_id", "=", Auth::user()->id], [
+        $data = Sub_sub_catagory::where([["user_id", "=", Auth::user()->id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])
@@ -32,7 +32,7 @@ class subSubCatagoryController extends Controller
     public function store(Request $request)
     {
         try {
-            $subSubCatagory = new sub_sub_catagory();
+            $subSubCatagory = new Sub_sub_catagory();
             $request->validate([
                 'name' => 'required',
                 'catagory_id' => 'required',
@@ -74,7 +74,7 @@ class subSubCatagoryController extends Controller
 
     public function show($id)
     {
-        $data = sub_sub_catagory::with('catagory')->with('user')->with('subCatagory')->where([["id", "=", $id], [
+        $data = Sub_sub_catagory::with('catagory')->with('user')->with('subCatagory')->where([["id", "=", $id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->first();
@@ -84,7 +84,7 @@ class subSubCatagoryController extends Controller
 
     public function edit($id)
     {
-        $data = sub_sub_catagory::where([["id", "=", $id], [
+        $data = Sub_sub_catagory::where([["id", "=", $id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->first();
@@ -95,7 +95,7 @@ class subSubCatagoryController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $subSubCatagory = sub_sub_catagory::where([["id", "=", $id], [
+            $subSubCatagory = Sub_sub_catagory::where([["id", "=", $id], [
                 "company_id", "=",
                 Auth::user()->company_id
             ]])->first();
@@ -142,7 +142,7 @@ class subSubCatagoryController extends Controller
     public function destroy($id)
     {
         try {
-            $subCategory   = sub_sub_catagory::where([["id", "=", $id], [
+            $subCategory   = Sub_sub_catagory::where([["id", "=", $id], [
                 "company_id", "=",
                 Auth::user()->company_id
             ]])->first();
@@ -166,7 +166,7 @@ class subSubCatagoryController extends Controller
 
     public function getSubSubCatagoryBySubCatagoryId($id)
     {
-        $data = sub_sub_catagory::where([["sub_catagory_id", "=", $id], [
+        $data = Sub_sub_catagory::where([["sub_catagory_id", "=", $id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->get();

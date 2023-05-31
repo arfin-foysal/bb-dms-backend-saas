@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\document;
+use App\Models\Document;
 use App\Models\Group;
 use App\Models\Group_file;
-use App\Models\sub_catagory;
-use App\Models\sub_sub_catagory;
+use App\Models\Sub_catagory;
+use App\Models\Sub_sub_catagory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -19,7 +19,7 @@ class documentController extends Controller
     public function allDocument()
     {
 
-        $data = document::where([["user_id", "=", Auth::user()->id], [
+        $data = Document::where([["user_id", "=", Auth::user()->id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->get();
@@ -30,7 +30,7 @@ class documentController extends Controller
     public function uploadeDocument(Request $request)
     {
         try {
-            $document = new document();
+            $document = new Document();
             $request->validate([
                 'name' => 'required',
                 // 'user_id' => 'required',
@@ -84,7 +84,7 @@ class documentController extends Controller
 
     public function documnetByCategory($id)
     {
-        $data = document::where([["catagory_id", "=", $id], [
+        $data = Document::where([["catagory_id", "=", $id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->with('user')->get();
@@ -103,7 +103,7 @@ class documentController extends Controller
                 'description' => 'required',
             ]);
 
-            $document = document::where([["id", "=", $id], [
+            $document = Document::where([["id", "=", $id], [
                 "company_id", "=",
                 Auth::user()->company_id
             ]])->first();
@@ -156,7 +156,7 @@ class documentController extends Controller
     public function destroy($id)
     {
         try {
-            $document = document::where([["id", "=", $id], [
+            $document = Document::where([["id", "=", $id], [
                 "company_id", "=",
                 Auth::user()->company_id
             ]])->first();
@@ -182,7 +182,7 @@ class documentController extends Controller
     public function download($id)
     {
         try {
-            $document = document::where([["id", "=", $id], [
+            $document = Document::where([["id", "=", $id], [
                 "company_id", "=",
                 Auth::user()->company_id
             ]])->first();
@@ -217,7 +217,7 @@ class documentController extends Controller
     public function showCategoryDocument($id)
 
     {
-        $data = document::where('catagory_id', $id)
+        $data = Document::where('catagory_id', $id)
             ->where('sub_catagory_id', null)
             ->where('sub_sub_catagory_id', null)
             ->where('user_id', '=', Auth::user()->id)
@@ -232,7 +232,7 @@ class documentController extends Controller
 
     public function showSubCategory($id)
     {
-        $data = sub_catagory::where('catagory_id', $id)
+        $data = Sub_catagory::where('catagory_id', $id)
             ->where('company_id', '=', Auth::user()->company_id)
             ->with('document')
             ->get();
@@ -242,7 +242,7 @@ class documentController extends Controller
 
     public function showSubCategoryDocument($id)
     {
-        $data = document::where('sub_catagory_id', $id)
+        $data = Document::where('sub_catagory_id', $id)
             ->where('sub_sub_catagory_id', null)
             ->where('company_id', '=', Auth::user()->company_id)
             ->with('user')
@@ -253,7 +253,7 @@ class documentController extends Controller
     }
     public function showSubSubCategory($id)
     {
-        $data = sub_sub_catagory::where('sub_catagory_id', $id)
+        $data = Sub_sub_catagory::where('sub_catagory_id', $id)
             ->where('company_id', '=', Auth::user()->company_id)
             ->with('document')
             ->get();
@@ -261,7 +261,7 @@ class documentController extends Controller
     }
     public function showSubSubCategoryDocument($id)
     {
-        $data = document::where('sub_sub_catagory_id', $id)
+        $data = Document::where('sub_sub_catagory_id', $id)
             ->where('company_id', '=', Auth::user()->company_id)
             ->with('user')
             ->with('catagory')
@@ -272,7 +272,7 @@ class documentController extends Controller
 
     public function documentPublish($id)
     {
-        $document = document::where([['id', '=', $id], ['company_id', '=', Auth::user()->company_id]])->first();
+        $document = Document::where([['id', '=', $id], ['company_id', '=', Auth::user()->company_id]])->first();
         $document->status = "Active";
         $document->save();
         $data = [
@@ -285,7 +285,7 @@ class documentController extends Controller
 
     public function AdminUnpubishDocumentList()
     {
-        $data = document::where('admin_status', 'Pending')
+        $data = Document::where('admin_status', 'Pending')
             ->where('company_id', '=', Auth::user()->company_id)
             ->where('status', 'Active')
             ->with('user')
@@ -296,7 +296,7 @@ class documentController extends Controller
 
     public function AdminPublishDocument($id)
     {
-        $data = document::where([['id', '=', $id], ['company_id', '=', Auth::user()->company_id]])->first();
+        $data = Document::where([['id', '=', $id], ['company_id', '=', Auth::user()->company_id]])->first();
         $data->admin_status = "Active";
         $data->save();
         $data = [
@@ -310,7 +310,7 @@ class documentController extends Controller
 
     public function AdminCancelPublishDocument($id)
     {
-        $data = document::where([['id', '=', $id], ['company_id', '=', Auth::user()->company_id]])->first();
+        $data = Document::where([['id', '=', $id], ['company_id', '=', Auth::user()->company_id]])->first();
         $data->admin_status = "Cancel";
         $data->save();
         $data = [
@@ -327,7 +327,7 @@ class documentController extends Controller
     {
 
         if ($request->search) {
-            $data = document::where('admin_status', 'Active')
+            $data = Document::where('admin_status', 'Active')
                 ->where('company_id', '=', Auth::user()->company_id)
                 ->where('status', 'Active')
                 ->where('name', 'like', '%' . $request->search . '%')
@@ -337,7 +337,7 @@ class documentController extends Controller
         }
 
 
-        $data = document::where('admin_status', 'Active')
+        $data = Document::where('admin_status', 'Active')
             ->where('company_id', '=', Auth::user()->company_id)
             ->where('status', 'Active')
             ->with('user')
@@ -350,11 +350,11 @@ class documentController extends Controller
     public function dashboardDetails()
     {
 
-        $mydoc = document::where([
+        $mydoc = Document::where([
             ['user_id', '=', Auth::user()->id],
             ['company_id', '=', Auth::user()->company_id]
         ])->count();
-        $publish = document::where('admin_status', 'Active')
+        $publish = Document::where('admin_status', 'Active')
             ->where('status', 'Active')
             ->where('company_id', '=', Auth::user()->company_id)
 
@@ -377,7 +377,7 @@ class documentController extends Controller
     public function yourDocument()
     {
 
-        $data = document::where([['user_id', '=', Auth::user()->id], ['company_id', '=', Auth::user()->company_id]])
+        $data = Document::where([['user_id', '=', Auth::user()->id], ['company_id', '=', Auth::user()->company_id]])
             ->get();
         return response()->json($data);
     }
@@ -385,15 +385,15 @@ class documentController extends Controller
     public function dashboardPublishDocument(Request $request)
     {
         $authId = Auth::user()->id;
-        $dashboardPublishDoc = document::where('admin_status', 'Active')
+        $dashboardPublishDoc = Document::where('admin_status', 'Active')
             ->where('company_id', '=', Auth::user()->company_id)
             ->where('status', 'Active')
             ->with('user')
             ->latest()
             ->paginate(10);
 
-        $mydoc = document::where([['user_id', '=', $authId], ['company_id', '=', Auth::user()->company_id]])->count();
-        $publish = document::where('admin_status', 'Active')
+        $mydoc = Document::where([['user_id', '=', $authId], ['company_id', '=', Auth::user()->company_id]])->count();
+        $publish = Document::where('admin_status', 'Active')
             ->where('status', 'Active')
             ->where('company_id', '=', Auth::user()->company_id)
             ->count();
@@ -418,7 +418,7 @@ class documentController extends Controller
 
     public function documentView(Request $request, $id)
     {
-        $allData = document::where('id', $id)
+        $allData = Document::where('id', $id)
             ->where('company_id', '=', Auth::user()->company_id)
             ->with(['user', 'catagory', 'subcatagory', 'subsubcatagory'])
             ->get();

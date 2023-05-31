@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
-use App\Models\sub_catagory;
+use App\Models\Sub_catagory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -14,7 +14,7 @@ class subCatagoryController extends Controller
     public function index()
     {
 
-        $data = sub_catagory::where([["user_id", "=", Auth::user()->id], [
+        $data = Sub_catagory::where([["user_id", "=", Auth::user()->id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])
@@ -33,7 +33,7 @@ class subCatagoryController extends Controller
 
 
         try {
-            $subCatagory = new sub_catagory();
+            $subCatagory = new Sub_catagory();
             $request->validate([
                 'name' => 'required',
                 'catagory_id' => 'required',
@@ -80,7 +80,7 @@ class subCatagoryController extends Controller
     public function show($id)
     {
 
-        $data = sub_catagory::with('catagory')->with('user')->where([["id", "=", $id], [
+        $data = Sub_catagory::with('catagory')->with('user')->where([["id", "=", $id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->first();
@@ -89,7 +89,7 @@ class subCatagoryController extends Controller
 
     public function showSubSubCatagory($id)
     {
-        $data = sub_catagory::with('SubSubCatagory')->with('user')->where([["id", "=", $id], [
+        $data = Sub_catagory::with('SubSubCatagory')->with('user')->where([["id", "=", $id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->first();
@@ -101,7 +101,7 @@ class subCatagoryController extends Controller
 
     public function edit($id)
     {
-        $data  = sub_catagory::where([["id", "=", $id], [
+        $data  = Sub_catagory::where([["id", "=", $id], [
             "company_id", "=",
             Auth::user()->company_id
         ]])->first();
@@ -113,7 +113,7 @@ class subCatagoryController extends Controller
     {
         try {
 
-            $subCategory = sub_catagory::where([["id", "=", $id], ["company_id", "=",
+            $subCategory = Sub_catagory::where([["id", "=", $id], ["company_id", "=",
             Auth::user()->company_id]])->first();;
 
 
@@ -161,7 +161,7 @@ class subCatagoryController extends Controller
     public function destroy($id)
     {
         try {
-            $subCategory = sub_catagory::where([["id", "=", $id], ["company_id", "=",
+            $subCategory = Sub_catagory::where([["id", "=", $id], ["company_id", "=",
             Auth::user()->company_id]])->first();
             if ($subCategory->image) {
                 unlink(public_path("images/" . $subCategory->image));
@@ -184,7 +184,7 @@ class subCatagoryController extends Controller
 
     public function subCategoryByCatagory($id)
     {
-        $data = sub_catagory::where([['catagory_id', $id],["company_id", "=",
+        $data = Sub_catagory::where([['catagory_id', $id],["company_id", "=",
         Auth::user()->company_id]])->get();
         return response()->json($data);
     }

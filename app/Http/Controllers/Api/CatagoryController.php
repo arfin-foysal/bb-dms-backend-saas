@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\catagory;
+use App\Models\Catagory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -15,7 +15,7 @@ class catagoryController extends Controller
     public function index()
     {
         $auth = Auth::user();
-        $data = catagory::where("user_id", "=", $auth->id)
+        $data = Catagory::where("user_id", "=", $auth->id)
             ->where("company_id", "=", $auth->company_id)
             ->with('user')
             ->latest()
@@ -30,7 +30,7 @@ class catagoryController extends Controller
     public function allCategory()
     {
         $auth = Auth::user();
-        $data = catagory::where("user_id", "=", $auth->id)
+        $data = Catagory::where("user_id", "=", $auth->id)
             ->where("company_id", "=", $auth->company_id)
             ->get();
         return response()->json($data);
@@ -43,7 +43,7 @@ class catagoryController extends Controller
 
         try {
 
-            $catagory = new catagory();
+            $catagory = new Catagory();
             $request->validate([
                 'name' => 'required',
                 'description' => 'required',
@@ -84,7 +84,7 @@ class catagoryController extends Controller
 
     public function show($id)
     {
-        $data = catagory::with('user')
+        $data = Catagory::with('user')
             ->where("company_id", "=", Auth::user()->company_id)
             ->find($id);
 
@@ -94,7 +94,7 @@ class catagoryController extends Controller
 
     public function categoryList(Request $request)
     {
-        $data = catagory::where("company_id", "=", Auth::user()->company_id)
+        $data = Catagory::where("company_id", "=", Auth::user()->company_id)
             ->all();
         return response()->json($data);
     }
@@ -103,7 +103,7 @@ class catagoryController extends Controller
     {
         $authId = Auth::user()->id;
 
-        $data = catagory::where("user_id", "=", $authId)
+        $data = Catagory::where("user_id", "=", $authId)
         ->where("company_id", "=", Auth::user()->company_id)
             ->with('subCatagory')
             ->with('subSubCatagory')
@@ -115,7 +115,7 @@ class catagoryController extends Controller
 
     public function edit($id)
     {
-        $data  = catagory:: where([["id", "=", $id], ["company_id", "=",
+        $data  = Catagory:: where([["id", "=", $id], ["company_id", "=",
         Auth::user()->company_id]])->first();
 
         return response()->json($data);
@@ -177,7 +177,7 @@ class catagoryController extends Controller
     {
         try {
             $catagory =
-                catagory::
+                Catagory::
                 where([["id", "=", $id], ["company_id", "=",
                  Auth::user()->company_id]])->first();
 
