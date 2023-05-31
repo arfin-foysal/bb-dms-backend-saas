@@ -38,7 +38,7 @@ class subSubCatagoryController extends Controller
                 'catagory_id' => 'required',
                 'sub_catagory_id' => 'required',
                 'description' => 'required',
-                'image' => 'image|mimes:jpg,png,jpeg,gif,svg',
+                'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
             ]);
 
             $filename = "";
@@ -59,7 +59,7 @@ class subSubCatagoryController extends Controller
 
             $data = [
                 'status' => true,
-                'message' => 'Sub Sub CatEgory created successfully.',
+                'message' => 'Sub Sub Category created successfully.',
                 'status code' => 200,
             ];
             return response()->json($data);

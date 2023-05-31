@@ -38,7 +38,7 @@ class subCatagoryController extends Controller
                 'name' => 'required',
                 'catagory_id' => 'required',
                 'description' => 'required',
-                'image' => 'image|mimes:jpg,png,jpeg,gif,svg',
+                'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg |max:2048',
             ]);
 
             $filename = "";
@@ -113,8 +113,10 @@ class subCatagoryController extends Controller
     {
         try {
 
-            $subCategory = Sub_catagory::where([["id", "=", $id], ["company_id", "=",
-            Auth::user()->company_id]])->first();;
+            $subCategory = Sub_catagory::where([["id", "=", $id], [
+                "company_id", "=",
+                Auth::user()->company_id
+            ]])->first();;
 
 
             $imageName = "";
@@ -161,8 +163,10 @@ class subCatagoryController extends Controller
     public function destroy($id)
     {
         try {
-            $subCategory = Sub_catagory::where([["id", "=", $id], ["company_id", "=",
-            Auth::user()->company_id]])->first();
+            $subCategory = Sub_catagory::where([["id", "=", $id], [
+                "company_id", "=",
+                Auth::user()->company_id
+            ]])->first();
             if ($subCategory->image) {
                 unlink(public_path("images/" . $subCategory->image));
             }
@@ -184,8 +188,10 @@ class subCatagoryController extends Controller
 
     public function subCategoryByCatagory($id)
     {
-        $data = Sub_catagory::where([['catagory_id', $id],["company_id", "=",
-        Auth::user()->company_id]])->get();
+        $data = Sub_catagory::where([['catagory_id', $id], [
+            "company_id", "=",
+            Auth::user()->company_id
+        ]])->get();
         return response()->json($data);
     }
 }
