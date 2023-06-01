@@ -398,4 +398,59 @@ class userController extends Controller
             ], 422);
         }
     }
+
+
+
+    public function profileUpdate(Request $request)
+    {
+
+      
+        try {
+
+            $user = User::where([['id', '=', Auth::user()->id], ['company_id', '=', Auth::user()->company_id]])->first();
+            $request->validate([
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'username' => 'required|min:4|unique:users,username,' . $user->id,
+
+            ]);
+            $imageName = "";
+            if ($image = $request->file('image')) {
+                if ($user->image) {
+                    unlink(public_path("images/" . $user->image));
+                }
+
+                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('images'), $imageName);
+            } else {
+                $imageName = $user->image;
+            }
+
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->username = $request->username;
+            $user->number = $request->number;
+            $user->gender = $request->gender;
+            $user->image = $imageName;
+            $user->save();
+            $data = [
+                'status' => true,
+                'message' => 'Profile Update Successfully.',
+                'status code' => 200,
+                'data' => $user,
+            ];
+
+            return response()->json($data);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+
+    }
+
+
+
+
 }

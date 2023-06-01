@@ -47,7 +47,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('/users-delete/{id}', [UserController::class, 'destroy']);
     Route::get('/all_user', [UserController::class, 'allUser']);
     Route::post('superadmin-create-or-update-and-company-assign', [UserController::class, 'superAdminCreateOrUpdateAndCompanyAssign']);
-
+    Route::post('profile-update', [UserController::class, 'profileUpdate']);
     Route::post('password-change', [UserController::class, 'ChangePassword']);
 
     Route::get('/super-admin-list', [UserController::class, 'superAdminList']);
